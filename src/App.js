@@ -34,8 +34,7 @@ const GoandTrackApp = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const messagesEndRef = useRef(null);
 
-  // Version and app info
-  const APP_VERSION = "v1.0.0";
+ const APP_VERSION = "v1.0.1-test"; // Changed from v1.0.0;
 
   // Demo user for MVP (in production, this would come from authentication)
   const demoUser = {
