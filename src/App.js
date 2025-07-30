@@ -39,7 +39,7 @@ const GoandTrackApp = () => {
 
   // Demo user for MVP (in production, this would come from authentication)
   const demoUser = {
-    id: '550e8400-e29b-41d4-a716-446655440000',
+    id: '39f87f08-8388-4fb6-ba33-6f7aaaa238b3',
     email: 'demo@goandtrack.com',
     company: 'Demo Logistics Corp',
     name: 'Demo User',
@@ -635,11 +635,41 @@ const GoandTrackApp = () => {
   };
 
   const extractShipmentId = (message) => {
-    const match = message.match(/(cc-[a-z]+-\d{4}-\d{3})/i);
-    return match ? match[1].toUpperCase() : null;
+    // Support both CC- format and TRACCAR- format
+    const ccMatch = message.match(/(cc-[a-z]+-\d{4}-\d{3})/i);
+    const traccarMatch = message.match(/(traccar-\d+)/i);
+    
+    if (ccMatch) return ccMatch[1].toUpperCase();
+    if (traccarMatch) return traccarMatch[1].toUpperCase();
+    return null;
   };
 
+  // ENHANCED generateAllStatusResponse function
   const generateAllStatusResponse = () => {
+    if (shipments.length === 0) {
+      return "No active shipments found. Try syncing your GPS devices.";
+    }
+    
+    // Group shipments by status
+    const statusGroups = shipments.reduce((groups, shipment) => {
+      const status = shipment.status || 'unknown';
+      if (!groups[status]) groups[status] = [];
+      groups[status].push(shipment);
+      return groups;
+    }, {});
+    
+    // Count by provider
+    const providerCounts = shipments.reduce((counts, shipment) => {
+      const provider = shipment.provider || 'Unknown';
+      counts[provider] = (counts[provider] || 0) + 1;
+      return counts;
+    }, {});
+    
+    // Generate summary
+    const totalDevices = shipments.length;
+    const activeDevices = shipments.filter(s => s.status !== 'offline').length;
+    const movingDevices = shipments.filter(s => s.status === 'in-transit').length;
+    
     return (
       <div>
         <div style={{
@@ -648,67 +678,176 @@ const GoandTrackApp = () => {
           padding: '15px',
           margin: '15px 0'
         }}>
-          {shipments.map((shipment, index) => {
-            const statusIcon = shipment.status === 'critical' ? '🚨' : 
-                             shipment.status === 'delayed' ? '⚠️' : 
-                             shipment.status === 'at-destination' ? '✅' : '🚛';
-            const tempStatus = (shipment.temperature >= shipment.target_temp_min && 
-                              shipment.temperature <= shipment.target_temp_max) ? '✅' : '❌';
-            const batteryStatus = shipment.battery_level > 50 ? '🔋' : shipment.battery_level > 20 ? '🟡' : '🔴';
-            
-            return (
-              <div key={shipment.shipment_id} style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '10px 0',
-                borderBottom: index < shipments.length - 1 ? '1px solid rgba(0, 0, 0, 0.05)' : 'none'
-              }}>
-                <div>
-                  <span 
-                    style={{
-                      color: '#6366f1',
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                      fontWeight: '600'
-                    }}
-                    onClick={() => handleShipmentClick(shipment.shipment_id)}
-                  >
-                    {shipment.shipment_id}
-                  </span>
-                  <div style={{fontSize: '14px', color: '#6b7280'}}>{shipment.shipment_name}</div>
-                </div>
-                <div style={{textAlign: 'right'}}>
-                  <div>{statusIcon} {shipment.status}</div>
-                  <div style={{fontSize: '14px'}}>
-                    {tempStatus} {shipment.temperature}°C {batteryStatus} {shipment.battery_level}%
+          <div style={{fontWeight: 'bold', marginBottom: '16px', fontSize: '16px'}}>
+            🚛 Fleet Overview ({totalDevices} devices)
+          </div>
+          
+          {/* Status Summary */}
+          <div style={{marginBottom: '16px'}}>
+            <div style={{fontWeight: '600', marginBottom: '8px'}}>📊 Status Summary:</div>
+            <div style={{fontSize: '14px', color: '#374151', lineHeight: '1.6'}}>
+              • 🚛 Moving: {statusGroups['in-transit']?.length || 0}<br/>
+              • ⏸️ Stopped: {statusGroups['stopped']?.length || 0}<br/>
+              • 📴 Offline: {statusGroups['offline']?.length || 0}<br/>
+              • 🚨 Critical: {statusGroups['critical']?.length || 0}
+            </div>
+          </div>
+          
+          {/* Provider Summary */}
+          <div style={{marginBottom: '16px'}}>
+            <div style={{fontWeight: '600', marginBottom: '8px'}}>🔗 Providers:</div>
+            <div style={{fontSize: '14px', color: '#374151', lineHeight: '1.6'}}>
+              {Object.entries(providerCounts).map(([provider, count]) => (
+                <div key={provider}>• {provider}: {count} devices</div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Device List */}
+          <div style={{fontWeight: '600', marginBottom: '12px'}}>📱 Active Devices:</div>
+          <div style={{maxHeight: '400px', overflowY: 'auto'}}>
+            {shipments.map((shipment, index) => {
+              const statusIcon = shipment.status === 'offline' ? '📴' : 
+                               shipment.status === 'stopped' ? '⏸️' : 
+                               shipment.status === 'in-transit' ? '🚛' : 
+                               shipment.status === 'critical' ? '🚨' : '📍';
+              
+              const batteryIcon = shipment.battery_level > 50 ? '🔋' : 
+                                 shipment.battery_level > 20 ? '🟡' : '🔴';
+              
+              // Format last update time
+              const formatLastUpdate = () => {
+                if (shipment.last_update) {
+                  const updateTime = new Date(shipment.last_update);
+                  const now = new Date();
+                  const diffMinutes = Math.round((now - updateTime) / 1000 / 60);
+                  
+                  if (diffMinutes < 1) return 'Just now';
+                  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+                  if (diffMinutes < 1440) return `${Math.round(diffMinutes / 60)}h ago`;
+                  return updateTime.toLocaleDateString();
+                }
+                return 'Unknown';
+              };
+              
+              // Format speed info
+              const speedInfo = shipment.speed && shipment.speed > 0 ? 
+                ` • ${shipment.speed.toFixed(1)} km/h` : '';
+              
+              return (
+                <div 
+                  key={shipment.shipment_id}
+                  style={{
+                    border: '1px solid #e5e7eb', 
+                    borderRadius: '8px', 
+                    padding: '12px', 
+                    margin: '8px 0', 
+                    background: 'white',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onClick={() => handleShipmentClick(shipment.shipment_id)}
+                  onMouseOver={(e) => e.target.style.backgroundColor = '#f9fafb'}
+                  onMouseOut={(e) => e.target.style.backgroundColor = 'white'}
+                >
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                    <div style={{flex: 1}}>
+                      <div style={{fontWeight: '600', color: '#1f2937'}}>
+                        {statusIcon} {shipment.shipment_name}
+                      </div>
+                      <div style={{fontSize: '12px', color: '#6b7280'}}>
+                        {shipment.shipment_id}
+                      </div>
+                    </div>
+                    <div style={{textAlign: 'right', fontSize: '12px', color: '#6b7280'}}>
+                      <div>{batteryIcon} {shipment.battery_level}%</div>
+                      <div>{formatLastUpdate()}{speedInfo}</div>
+                    </div>
+                  </div>
+                  <div style={{marginTop: '8px', fontSize: '12px', color: '#4b5563'}}>
+                    📍 {shipment.current_location || 'Unknown Location'}
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
         <p style={{fontSize: '12px', color: '#6b7280'}}>
-          📊 Data loaded from database • Tracking {shipments.length} shipments across {new Set(shipments.map(s => s.provider)).size} providers
+          💰 Live GPS tracking • Updates every 30 seconds • Click any device for details
         </p>
       </div>
     );
   };
 
+  // ENHANCED generateShipmentDetails function
   const generateShipmentDetails = (shipmentId) => {
     const shipment = shipments.find(s => s.shipment_id === shipmentId);
     if (!shipment) {
       return `Shipment ${shipmentId} not found in our tracking system.`;
     }
     
-    const statusIcon = shipment.status === 'critical' ? '🚨' : 
-                     shipment.status === 'delayed' ? '⚠️' : 
-                     shipment.status === 'at-destination' ? '✅' : '🚛';
+    const statusIcon = shipment.status === 'offline' ? '📴' : 
+                     shipment.status === 'stopped' ? '⏸️' : 
+                     shipment.status === 'in-transit' ? '🚛' : 
+                     shipment.status === 'critical' ? '🚨' : '📍';
     
-    const tempStatus = (shipment.temperature >= shipment.target_temp_min && 
-                      shipment.temperature <= shipment.target_temp_max) ? '✅' : '❌';
+    const batteryIcon = shipment.battery_level > 80 ? '🔋' : 
+                       shipment.battery_level > 50 ? '🔋' : 
+                       shipment.battery_level > 20 ? '🟡' : '🔴';
     
-    const batteryIcon = shipment.battery_level > 50 ? '🔋' : shipment.battery_level > 20 ? '🟡' : '🔴';
+    // Enhanced temperature display
+    const formatTemperature = () => {
+      if (shipment.temperature !== null && shipment.temperature !== undefined) {
+        const tempStatus = (shipment.target_temp_min && shipment.target_temp_max) ?
+          (shipment.temperature >= shipment.target_temp_min && 
+           shipment.temperature <= shipment.target_temp_max) ? '✅' : '❌' : '🌡️';
+        
+        const targetRange = (shipment.target_temp_min && shipment.target_temp_max) ?
+          ` (Target: ${shipment.target_temp_min}°C to ${shipment.target_temp_max}°C)` : '';
+        
+        return `${tempStatus} ${shipment.temperature}°C${targetRange}`;
+      } else {
+        return '🚫 No temperature sensor';
+      }
+    };
+    
+    // Enhanced GPS coordinates display
+    const formatCoordinates = () => {
+      if (shipment.latitude && shipment.longitude && 
+          shipment.latitude !== 0 && shipment.longitude !== 0) {
+        return `📍 GPS: ${shipment.latitude.toFixed(6)}, ${shipment.longitude.toFixed(6)}`;
+      }
+      return '📍 GPS: No coordinates';
+    };
+    
+    // Enhanced speed/movement display
+    const formatMovement = () => {
+      const parts = [];
+      if (shipment.speed !== undefined && shipment.speed > 0) {
+        parts.push(`🏃 Speed: ${shipment.speed.toFixed(1)} km/h`);
+      }
+      if (shipment.course !== undefined) {
+        const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+        const dirIndex = Math.round(shipment.course / 45) % 8;
+        parts.push(`🧭 Heading: ${directions[dirIndex]} (${shipment.course.toFixed(0)}°)`);
+      }
+      return parts.length > 0 ? parts.join(' • ') : '';
+    };
+    
+    // Last update time
+    const formatLastUpdate = () => {
+      if (shipment.last_update) {
+        const updateTime = new Date(shipment.last_update);
+        const now = new Date();
+        const diffMinutes = Math.round((now - updateTime) / 1000 / 60);
+        
+        if (diffMinutes < 1) return 'Just now';
+        if (diffMinutes < 60) return `${diffMinutes} min ago`;
+        if (diffMinutes < 1440) return `${Math.round(diffMinutes / 60)} hours ago`;
+        return updateTime.toLocaleDateString();
+      }
+      return 'Unknown';
+    };
     
     return (
       <div>
@@ -722,20 +861,27 @@ const GoandTrackApp = () => {
           fontSize: '14px',
           color: '#000000'
         }}>
-          <div style={{fontWeight: 'bold', marginBottom: '16px'}}>{statusIcon} {shipment.shipment_id} - {shipment.shipment_name}</div>
+          <div style={{fontWeight: 'bold', marginBottom: '16px'}}>
+            {statusIcon} {shipment.shipment_id} - {shipment.shipment_name}
+          </div>
           
           <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-            <div><strong>Status:</strong> {shipment.status}</div>
+            <div><strong>Status:</strong> {shipment.status.charAt(0).toUpperCase() + shipment.status.slice(1)}</div>
             <div><strong>Provider:</strong> {shipment.provider}</div>
             <div><strong>Type:</strong> {shipment.shipment_type}</div>
             
-            <div><strong>Temperature:</strong> {tempStatus} {shipment.temperature}°C 
-              (Target: {shipment.target_temp_min}°C to {shipment.target_temp_max}°C)</div>
+            <div><strong>Temperature:</strong> {formatTemperature()}</div>
             <div><strong>Battery:</strong> {batteryIcon} {shipment.battery_level}%</div>
             
             <div><strong>Current Location:</strong> {shipment.current_location}</div>
-            <div><strong>Destination:</strong> {shipment.destination_address}</div>
-            <div><strong>ETA:</strong> {shipment.estimated_arrival}</div>
+            <div style={{fontSize: '12px', color: '#666'}}>{formatCoordinates()}</div>
+            
+            {formatMovement() && (
+              <div style={{fontSize: '12px', color: '#666'}}>{formatMovement()}</div>
+            )}
+            
+            <div><strong>Last Update:</strong> {formatLastUpdate()}</div>
+            <div><strong>Journey Info:</strong> {shipment.estimated_arrival}</div>
             
             {shipment.current_geofence && (
               <div style={{marginTop: '8px', padding: '8px', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px'}}>
@@ -744,10 +890,13 @@ const GoandTrackApp = () => {
             )}
             
             <div style={{marginTop: '8px', fontSize: '12px', color: '#6b7280'}}>
-              🗄️ Database ID: {shipment.id || 'N/A'} • Created: {new Date(shipment.created_at).toLocaleDateString()}
+              🗄️ Database ID: {shipment.id || 'N/A'} • Device ID: {shipment.traccar_device_id} • Created: {new Date(shipment.created_at).toLocaleDateString()}
             </div>
           </div>
         </div>
+        <p style={{fontSize: '12px', color: '#6b7280'}}>
+          💰 Real-time GPS tracking active (Updates every 30 seconds)
+        </p>
       </div>
     );
   };
@@ -757,12 +906,12 @@ const GoandTrackApp = () => {
     
     if (lowerMessage.includes('status') || lowerMessage.includes('overview') || lowerMessage.includes('all shipment')) {
       return generateAllStatusResponse();
-    } else if (lowerMessage.includes('cc-') || shipments.some(s => lowerMessage.includes(s.shipment_id?.toLowerCase()))) {
+    } else if (lowerMessage.includes('cc-') || lowerMessage.includes('traccar-') || shipments.some(s => lowerMessage.includes(s.shipment_id?.toLowerCase()))) {
       const shipmentId = extractShipmentId(lowerMessage);
       if (shipmentId) {
         return generateShipmentDetails(shipmentId);
       } else {
-        return "I couldn't identify the specific shipment. Please use the full shipment ID (e.g., CC-VAX-2024-001).";
+        return "I couldn't identify the specific shipment. Please use the full shipment ID (e.g., CC-VAX-2024-001 or TRACCAR-123456).";
       }
     } else if (lowerMessage.includes('cost') || lowerMessage.includes('billing') || lowerMessage.includes('charges')) {
       return `Today's tracking costs: $${totalCost.toFixed(2)}. You're charged $0.50 per shipment tracked per day.`;
@@ -1499,11 +1648,11 @@ Try asking "Show me all shipment status" or click any shipment ID for details.`;
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {[
                 { command: "Show me all shipment status", description: "Get overview of all shipments from database" },
+                { command: "Track TRACCAR-869912033035581", description: "Track your live GPS device" },
                 { command: "What are the current temperatures?", description: "View real-time temperature readings" },
                 { command: "Where are my shipments located?", description: "Get current locations and estimated arrival times" },
                 { command: "Check database connection", description: "Verify database connectivity status" },
                 { command: "Show me critical shipments", description: "Display shipments requiring immediate attention" },
-                { command: "Tell me about CC-VAX-2024-001", description: "Get detailed info about a specific shipment" },
                 { command: "What are my costs today?", description: "View daily tracking charges" }
               ].map((item, index) => (
                 <div 
@@ -1562,7 +1711,9 @@ const ShipmentList = ({ shipments, onShipmentClick }) => {
       {shipments.map((shipment, index) => {
         const statusIcon = shipment.status === 'critical' ? '🚨' : 
                          shipment.status === 'delayed' ? '⚠️' : 
-                         shipment.status === 'at-destination' ? '✅' : '🚛';
+                         shipment.status === 'at-destination' ? '✅' : 
+                         shipment.status === 'offline' ? '📴' : 
+                         shipment.status === 'stopped' ? '⏸️' : '🚛';
         
         return (
           <div key={shipment.shipment_id} style={{
@@ -1589,7 +1740,7 @@ const ShipmentList = ({ shipments, onShipmentClick }) => {
             <div style={{textAlign: 'right'}}>
               <div>{statusIcon} {shipment.status}</div>
               <div style={{fontSize: '14px', color: '#6b7280'}}>
-                {shipment.temperature}°C | {shipment.battery_level}%
+                {shipment.temperature ? `${shipment.temperature}°C` : 'No temp'} | {shipment.battery_level}%
               </div>
             </div>
           </div>
