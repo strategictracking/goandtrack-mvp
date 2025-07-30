@@ -25,3 +25,12 @@ backend/.env
 .env
 .env.local
 *.env
+backend/.env
+*.env
+
+# Environment variables - DO NOT COMMIT
+backend/.env
+.env
+.env.local
+*.env
+.env.*
