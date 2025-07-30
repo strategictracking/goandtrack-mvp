@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 // Real Supabase Client Setup
@@ -93,16 +93,7 @@ const GoandTrackApp = () => {
   }, []);
 
   // Generate new alerts automatically every 45 seconds (SINGLE INSTANCE)
-  useEffect(() => {
-    const alertTimer = setInterval(() => {
-      generateNewAlert();
-    }, 45000); // 45 seconds
-
-    return () => clearInterval(alertTimer);
-  }, [shipments]);
-
-  // SINGLE generateNewAlert function with improved time aging
-  const generateNewAlert = () => {
+  const generateNewAlert = useCallback(() => {
     if (shipments.length === 0) return;
 
     const alertTypes = [
@@ -160,7 +151,15 @@ const GoandTrackApp = () => {
     if (randomAlertType.type === 'alert') {
       playAlertSound();
     }
-  };
+  }, [shipments]);
+
+  useEffect(() => {
+    const alertTimer = setInterval(() => {
+      generateNewAlert();
+    }, 45000); // 45 seconds
+
+    return () => clearInterval(alertTimer);
+  }, [generateNewAlert]);
 
   // Play alert sound function - improved
   const playAlertSound = () => {
@@ -222,18 +221,6 @@ const GoandTrackApp = () => {
     });
 
     return sorted;
-  };
-
-  const formatTimeAgo = (time) => {
-    const now = new Date();
-    const diffMs = now - new Date(time);
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    return new Date(time).toLocaleDateString();
   };
 
   const initializeApp = async () => {
@@ -667,8 +654,6 @@ const GoandTrackApp = () => {
     
     // Generate summary
     const totalDevices = shipments.length;
-    const activeDevices = shipments.filter(s => s.status !== 'offline').length;
-    const movingDevices = shipments.filter(s => s.status === 'in-transit').length;
     
     return (
       <div>
