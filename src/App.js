@@ -4,8 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 // Real Supabase Client Setup
 const createSupabaseClient = () => {
   // Get credentials from environment variables
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+  const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
   
   // Check if credentials are provided
   if (!supabaseUrl || !supabaseKey) {
