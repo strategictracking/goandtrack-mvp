@@ -1,5 +1,5 @@
-// Signup.js - Enhanced with Display Name Capture
-// Place this in: /src/pages/Signup.js
+// src/pages/Signup.js
+// Enhanced design with existing functionality preserved
 
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
@@ -32,19 +32,19 @@ const Signup = () => {
     
     // Validation
     if (formData.password !== formData.confirmPassword) {
-      setMessage('Passwords do not match');
+      setMessage('❌ Passwords do not match');
       setMessageType('error');
       return;
     }
     
     if (formData.password.length < 6) {
-      setMessage('Password must be at least 6 characters');
+      setMessage('❌ Password must be at least 6 characters');
       setMessageType('error');
       return;
     }
     
     if (!formData.displayName.trim()) {
-      setMessage('Display name is required');
+      setMessage('❌ Display name is required');
       setMessageType('error');
       return;
     }
@@ -64,7 +64,7 @@ const Signup = () => {
       });
       
       if (error) {
-        setMessage(error.message);
+        setMessage(`❌ ${error.message}`);
         setMessageType('error');
       } else if (data.user) {
         // Also update the users table if you have one
@@ -90,7 +90,7 @@ const Signup = () => {
         }, 2000);
       }
     } catch (error) {
-      setMessage('An unexpected error occurred');
+      setMessage('❌ An unexpected error occurred');
       setMessageType('error');
       console.error('Signup error:', error);
     } finally {
@@ -98,184 +98,323 @@ const Signup = () => {
     }
   };
 
-  return (
-    <div style={{
+  // Styles matching the enhanced login page
+  const styles = {
+    container: {
       minHeight: '100vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#f9fafb'
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        padding: '2rem',
-        borderRadius: '12px',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-        width: '100%',
-        maxWidth: '400px'
-      }}>
-        {/* Logo */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginBottom: '2rem'
-        }}>
-          <div style={{
-            width: '60px',
-            height: '60px',
-            backgroundColor: '#ef4444',
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: '24px',
-            fontWeight: 'bold'
-          }}>
-            G
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: '20px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+    },
+    signupBox: {
+      background: 'white',
+      borderRadius: '20px',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+      padding: '50px 40px',
+      width: '100%',
+      maxWidth: '480px',
+      animation: 'slideUp 0.5s ease-out'
+    },
+    logoContainer: {
+      textAlign: 'center',
+      marginBottom: '35px'
+    },
+    logo: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '12px',
+      marginBottom: '10px'
+    },
+    logoIcon: {
+      width: '45px',
+      height: '45px',
+      background: 'linear-gradient(135deg, #667eea, #764ba2)',
+      borderRadius: '12px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '24px',
+      color: 'white',
+      fontWeight: 'bold'
+    },
+    logoText: {
+      fontSize: '32px',
+      fontWeight: '800',
+      background: 'linear-gradient(135deg, #667eea, #764ba2)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      backgroundClip: 'text',
+      letterSpacing: '-0.5px'
+    },
+    tagline: {
+      color: '#8b92a5',
+      fontSize: '14px',
+      marginTop: '8px',
+      letterSpacing: '0.5px'
+    },
+    title: {
+      fontSize: '26px',
+      fontWeight: '700',
+      color: '#2d3748',
+      marginBottom: '10px',
+      textAlign: 'center'
+    },
+    subtitle: {
+      fontSize: '14px',
+      color: '#718096',
+      marginBottom: '30px',
+      textAlign: 'center'
+    },
+    inputGroup: {
+      marginBottom: '20px'
+    },
+    label: {
+      display: 'block',
+      marginBottom: '8px',
+      color: '#4a5568',
+      fontSize: '14px',
+      fontWeight: '600',
+      letterSpacing: '0.3px'
+    },
+    required: {
+      color: '#e53e3e',
+      marginLeft: '2px'
+    },
+    input: {
+      width: '100%',
+      padding: '14px 16px',
+      border: '2px solid #e2e8f0',
+      borderRadius: '10px',
+      fontSize: '15px',
+      transition: 'all 0.3s ease',
+      outline: 'none',
+      backgroundColor: '#f8f9fa',
+      boxSizing: 'border-box'
+    },
+    helpText: {
+      marginTop: '6px',
+      fontSize: '12px',
+      color: '#718096'
+    },
+    button: {
+      width: '100%',
+      padding: '15px',
+      background: 'linear-gradient(135deg, #667eea, #764ba2)',
+      color: 'white',
+      border: 'none',
+      borderRadius: '10px',
+      fontSize: '16px',
+      fontWeight: '700',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      marginTop: '10px',
+      letterSpacing: '0.5px'
+    },
+    buttonDisabled: {
+      opacity: '0.7',
+      cursor: 'not-allowed'
+    },
+    loginPrompt: {
+      textAlign: 'center',
+      marginTop: '30px',
+      paddingTop: '30px',
+      borderTop: '1px solid #e2e8f0',
+      color: '#718096',
+      fontSize: '14px'
+    },
+    loginLink: {
+      color: '#667eea',
+      fontWeight: '700',
+      textDecoration: 'none',
+      marginLeft: '5px'
+    },
+    message: {
+      padding: '12px 16px',
+      borderRadius: '8px',
+      marginTop: '20px',
+      fontSize: '14px',
+      fontWeight: '500',
+      textAlign: 'center',
+      animation: 'fadeIn 0.3s ease'
+    },
+    errorMessage: {
+      backgroundColor: '#fed7d7',
+      color: '#c53030',
+      border: '1px solid #fc8181'
+    },
+    successMessage: {
+      backgroundColor: '#c6f6d5',
+      color: '#22543d',
+      border: '1px solid #9ae6b4'
+    },
+    inviteNote: {
+      background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+      borderRadius: '10px',
+      padding: '15px',
+      marginBottom: '25px',
+      fontSize: '13px',
+      color: '#92400e',
+      textAlign: 'center',
+      border: '1px solid #fcd34d'
+    },
+    features: {
+      display: 'flex',
+      justifyContent: 'space-around',
+      marginTop: '25px',
+      paddingTop: '25px',
+      borderTop: '1px solid #e2e8f0'
+    },
+    feature: {
+      textAlign: 'center',
+      fontSize: '12px',
+      color: '#8b92a5'
+    },
+    featureIcon: {
+      fontSize: '20px',
+      marginBottom: '5px'
+    }
+  };
+
+  // Add animation keyframes if not already added
+  if (!document.getElementById('signup-animations')) {
+    const style = document.createElement('style');
+    style.id = 'signup-animations';
+    style.innerHTML = `
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      input:focus {
+        border-color: #667eea !important;
+        background-color: white !important;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+      }
+      button:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+      }
+      a:hover {
+        color: #764ba2 !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.signupBox}>
+        {/* Logo Section */}
+        <div style={styles.logoContainer}>
+          <div style={styles.logo}>
+            <div style={styles.logoIcon}>
+              📍
+            </div>
+            <div style={styles.logoText}>GoandTrack</div>
           </div>
+          <div style={styles.tagline}>AI-Powered Logistics Intelligence</div>
+        </div>
+
+        {/* Title */}
+        <h2 style={styles.title}>Create Your Account</h2>
+        <p style={styles.subtitle}>Join GoandTrack to start tracking your shipments</p>
+        
+        {/* Invite Note */}
+        <div style={styles.inviteNote}>
+          🎯 <strong>Invite-Only Beta</strong><br/>
+          Welcome! You've been invited to join our exclusive beta program.
         </div>
         
-        <h2 style={{
-          textAlign: 'center',
-          marginBottom: '0.5rem',
-          fontSize: '24px',
-          fontWeight: '600'
-        }}>
-          Create your account
-        </h2>
-        
-        <p style={{
-          textAlign: 'center',
-          color: '#6b7280',
-          marginBottom: '2rem',
-          fontSize: '14px'
-        }}>
-          Join GoandTrack to start tracking your shipments
-        </p>
-        
         <form onSubmit={handleSignup}>
-          {/* Display Name */}
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#374151'
-            }}>
+          {/* Display Name - Required */}
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
               Display Name
+              <span style={styles.required}>*</span>
             </label>
             <input
               type="text"
               name="displayName"
-              placeholder="John Doe"
+              placeholder="Enter your full name"
               value={formData.displayName}
               onChange={handleChange}
               required
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '6px',
-                fontSize: '14px',
-                outline: 'none'
-              }}
+              style={styles.input}
+              disabled={loading}
             />
+            <p style={styles.helpText}>
+              This name will be shown in your dashboard
+            </p>
           </div>
           
           {/* Email */}
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#374151'
-            }}>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
               Email Address
+              <span style={styles.required}>*</span>
             </label>
             <input
               type="email"
               name="email"
-              placeholder="john@company.com"
+              placeholder="you@company.com"
               value={formData.email}
               onChange={handleChange}
               required
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '6px',
-                fontSize: '14px',
-                outline: 'none'
-              }}
+              style={styles.input}
+              disabled={loading}
             />
           </div>
           
           {/* Password */}
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#374151'
-            }}>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
               Password
+              <span style={styles.required}>*</span>
             </label>
             <input
               type="password"
               name="password"
-              placeholder="••••••••"
+              placeholder="Create a secure password"
               value={formData.password}
               onChange={handleChange}
               required
               minLength="6"
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '6px',
-                fontSize: '14px',
-                outline: 'none'
-              }}
+              style={styles.input}
+              disabled={loading}
             />
-            <p style={{
-              marginTop: '0.25rem',
-              fontSize: '12px',
-              color: '#6b7280'
-            }}>
+            <p style={styles.helpText}>
               Must be at least 6 characters
             </p>
           </div>
           
           {/* Confirm Password */}
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#374151'
-            }}>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
               Confirm Password
+              <span style={styles.required}>*</span>
             </label>
             <input
               type="password"
               name="confirmPassword"
-              placeholder="••••••••"
+              placeholder="Confirm your password"
               value={formData.confirmPassword}
               onChange={handleChange}
               required
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '6px',
-                fontSize: '14px',
-                outline: 'none'
-              }}
+              style={styles.input}
+              disabled={loading}
             />
           </div>
           
@@ -284,53 +423,47 @@ const Signup = () => {
             type="submit"
             disabled={loading}
             style={{
-              width: '100%',
-              padding: '0.75rem',
-              backgroundColor: loading ? '#9ca3af' : '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '16px',
-              fontWeight: '500',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'background-color 0.2s'
+              ...styles.button,
+              ...(loading ? styles.buttonDisabled : {})
             }}
           >
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? '🔄 Creating Account...' : 'Create Account'}
           </button>
         </form>
         
         {/* Message */}
         {message && (
           <div style={{
-            marginTop: '1rem',
-            padding: '0.75rem',
-            backgroundColor: messageType === 'success' ? '#d1fae5' : '#fee2e2',
-            color: messageType === 'success' ? '#065f46' : '#991b1b',
-            borderRadius: '6px',
-            fontSize: '14px',
-            textAlign: 'center'
+            ...styles.message,
+            ...(messageType === 'success' ? styles.successMessage : styles.errorMessage)
           }}>
             {message}
           </div>
         )}
         
         {/* Login Link */}
-        <p style={{
-          marginTop: '1.5rem',
-          textAlign: 'center',
-          fontSize: '14px',
-          color: '#6b7280'
-        }}>
-          Already have an account?{' '}
-          <Link to="/login" style={{
-            color: '#3b82f6',
-            textDecoration: 'none',
-            fontWeight: '500'
-          }}>
-            Sign in
+        <div style={styles.loginPrompt}>
+          Already have an account?
+          <Link to="/login" style={styles.loginLink}>
+            Sign in here
           </Link>
-        </p>
+        </div>
+
+        {/* Features */}
+        <div style={styles.features}>
+          <div style={styles.feature}>
+            <div style={styles.featureIcon}>🚚</div>
+            <div>Multi-Provider</div>
+          </div>
+          <div style={styles.feature}>
+            <div style={styles.featureIcon}>🤖</div>
+            <div>AI-Powered</div>
+          </div>
+          <div style={styles.feature}>
+            <div style={styles.featureIcon}>⚡</div>
+            <div>Real-Time</div>
+          </div>
+        </div>
       </div>
     </div>
   );
