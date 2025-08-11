@@ -251,7 +251,7 @@ const Dashboard = () => {
                       <p>Permanently delete your account and all data</p>
                     </div>
                     <button className="btn-danger" onClick={() => {
-                      if (confirm('Are you sure? This cannot be undone.')) {
+                      if (window.confirm('Are you sure? This cannot be undone.')) {
                         addMessage('system', '🗑️ Account deletion requested');
                       }
                     }}>
