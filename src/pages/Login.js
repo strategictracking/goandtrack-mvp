@@ -45,21 +45,25 @@ const Login = () => {
     setIsLoading(false);
   };
 
-  // Styles
+  // GoandTrack Brand Colors
+  const brandRed = '#DC2626';
+  const brandDark = '#111827';
+
+  // Styles with GoandTrack branding
   const styles = {
     container: {
       minHeight: '100vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #f5f5f5 0%, #e5e5e5 100%)',
       padding: '20px',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
     },
     loginBox: {
       background: 'white',
-      borderRadius: '20px',
-      boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+      borderRadius: '16px',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.1)',
       padding: '50px 40px',
       width: '100%',
       maxWidth: '440px',
@@ -67,46 +71,23 @@ const Login = () => {
     },
     logoContainer: {
       textAlign: 'center',
-      marginBottom: '35px'
+      marginBottom: '40px'
     },
-    logo: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '12px',
-      marginBottom: '10px'
-    },
-    logoIcon: {
-      width: '45px',
-      height: '45px',
-      background: 'linear-gradient(135deg, #667eea, #764ba2)',
-      borderRadius: '12px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: '24px',
-      color: 'white',
-      fontWeight: 'bold'
-    },
-    logoText: {
-      fontSize: '32px',
-      fontWeight: '800',
-      background: 'linear-gradient(135deg, #667eea, #764ba2)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      backgroundClip: 'text',
-      letterSpacing: '-0.5px'
+    logoImage: {
+      maxWidth: '200px',
+      height: 'auto',
+      marginBottom: '12px'
     },
     tagline: {
-      color: '#8b92a5',
+      color: '#6b7280',
       fontSize: '14px',
-      marginTop: '8px',
+      marginTop: '12px',
       letterSpacing: '0.5px'
     },
     title: {
       fontSize: '26px',
       fontWeight: '700',
-      color: '#2d3748',
+      color: brandDark,
       marginBottom: '30px',
       textAlign: 'center'
     },
@@ -116,7 +97,7 @@ const Login = () => {
     label: {
       display: 'block',
       marginBottom: '8px',
-      color: '#4a5568',
+      color: '#374151',
       fontSize: '14px',
       fontWeight: '600',
       letterSpacing: '0.3px'
@@ -124,23 +105,23 @@ const Login = () => {
     input: {
       width: '100%',
       padding: '14px 16px',
-      border: '2px solid #e2e8f0',
+      border: '2px solid #e5e7eb',
       borderRadius: '10px',
       fontSize: '15px',
       transition: 'all 0.3s ease',
       outline: 'none',
-      backgroundColor: '#f8f9fa',
+      backgroundColor: '#f9fafb',
       boxSizing: 'border-box'
     },
     inputFocus: {
-      borderColor: '#667eea',
+      borderColor: brandRed,
       backgroundColor: 'white',
-      boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)'
+      boxShadow: `0 0 0 3px ${brandRed}20`
     },
     button: {
       width: '100%',
       padding: '15px',
-      background: 'linear-gradient(135deg, #667eea, #764ba2)',
+      background: brandRed,
       color: 'white',
       border: 'none',
       borderRadius: '10px',
@@ -155,7 +136,7 @@ const Login = () => {
     },
     buttonHover: {
       transform: 'translateY(-2px)',
-      boxShadow: '0 10px 25px rgba(102, 126, 234, 0.3)'
+      boxShadow: `0 10px 25px ${brandRed}30`
     },
     buttonDisabled: {
       opacity: '0.7',
@@ -166,7 +147,7 @@ const Login = () => {
       marginTop: '20px'
     },
     forgotLink: {
-      color: '#667eea',
+      color: brandRed,
       fontSize: '14px',
       textDecoration: 'none',
       fontWeight: '600',
@@ -177,12 +158,12 @@ const Login = () => {
       textAlign: 'center',
       marginTop: '30px',
       paddingTop: '30px',
-      borderTop: '1px solid #e2e8f0',
-      color: '#718096',
+      borderTop: '1px solid #e5e7eb',
+      color: '#6b7280',
       fontSize: '14px'
     },
     signupLink: {
-      color: '#667eea',
+      color: brandRed,
       fontWeight: '700',
       textDecoration: 'none',
       marginLeft: '5px'
@@ -197,26 +178,26 @@ const Login = () => {
       animation: 'fadeIn 0.3s ease'
     },
     errorMessage: {
-      backgroundColor: '#fed7d7',
-      color: '#c53030',
-      border: '1px solid #fc8181'
+      backgroundColor: '#fee2e2',
+      color: '#991b1b',
+      border: '1px solid #fecaca'
     },
     successMessage: {
-      backgroundColor: '#c6f6d5',
-      color: '#22543d',
-      border: '1px solid #9ae6b4'
+      backgroundColor: '#dcfce7',
+      color: '#166534',
+      border: '1px solid #bbf7d0'
     },
     resetModal: {
       marginTop: '20px',
       padding: '20px',
-      background: '#f7fafc',
+      background: '#f9fafb',
       borderRadius: '10px',
-      border: '2px solid #e2e8f0'
+      border: '2px solid #e5e7eb'
     },
     resetTitle: {
       fontSize: '18px',
       fontWeight: '700',
-      color: '#2d3748',
+      color: brandDark,
       marginBottom: '15px'
     },
     features: {
@@ -224,16 +205,17 @@ const Login = () => {
       justifyContent: 'space-around',
       marginTop: '25px',
       paddingTop: '25px',
-      borderTop: '1px solid #e2e8f0'
+      borderTop: '1px solid #e5e7eb'
     },
     feature: {
       textAlign: 'center',
       fontSize: '12px',
-      color: '#8b92a5'
+      color: '#6b7280'
     },
     featureIcon: {
       fontSize: '20px',
-      marginBottom: '5px'
+      marginBottom: '5px',
+      color: brandRed
     }
   };
 
@@ -257,16 +239,17 @@ const Login = () => {
         to { opacity: 1; }
       }
       input:focus {
-        border-color: #667eea !important;
+        border-color: ${brandRed} !important;
         background-color: white !important;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+        box-shadow: 0 0 0 3px ${brandRed}20 !important;
       }
       button:hover:not(:disabled) {
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 10px 25px ${brandRed}30;
+        background: #b91c1c;
       }
       a:hover {
-        color: #764ba2 !important;
+        color: #991b1b !important;
       }
     `;
     document.head.appendChild(style);
@@ -275,14 +258,18 @@ const Login = () => {
   return (
     <div style={styles.container}>
       <div style={styles.loginBox}>
-        {/* Logo Section */}
+        {/* Logo Section - Using actual image */}
         <div style={styles.logoContainer}>
-          <div style={styles.logo}>
-            <div style={styles.logoIcon}>
-              📍
-            </div>
-            <div style={styles.logoText}>GoandTrack</div>
-          </div>
+          <img 
+            src={`${process.env.PUBLIC_URL}/goandtrack-logo.png`}
+            alt="GoandTrack" 
+            style={styles.logoImage}
+            onError={(e) => {
+              // Fallback if logo doesn't load
+              e.target.style.display = 'none';
+              e.target.parentElement.innerHTML += '<div style="font-size: 32px; font-weight: 800; color: #DC2626; margin-bottom: 12px;">GoandTrack™</div>';
+            }}
+          />
           <div style={styles.tagline}>AI-Powered Logistics Intelligence</div>
         </div>
 
